@@ -6,12 +6,15 @@
   <title>DMICOckpit</title>
   <meta name="description" content="DMICO's personal content pipeline cockpit for XHS + Instagram.">
   <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#131318">
+  <meta name="theme-color" content="#F4EBD2">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
@@ -84,6 +87,48 @@
         <button id="modalCancel" class="btn">Cancel</button>
         <button id="modalSave" class="btn primary">Save</button>
       </div>
+    </div>
+  </div>
+
+  <!-- SPLITTER (fullscreen) -->
+  <div id="splitBack" class="split-back hidden">
+    <div class="split-head">
+      <button id="splitClose" class="btn small">← Board</button>
+      <div id="splitCardTitle" class="split-title"></div>
+    </div>
+    <div class="split-tabs" id="splitTabs">
+      <button class="split-tab active" data-pane="xhs">XHS 小红书</button>
+      <button class="split-tab" data-pane="ig">Instagram</button>
+    </div>
+
+    <!-- XHS PANE -->
+    <div id="pane-xhs" class="pane">
+      <label>Note title <span id="xhsTitleCount" class="counter">0/20</span>
+        <input type="text" id="xhsTitle" placeholder="关键词标题，像搜索结果，不要标题党">
+      </label>
+      <label>Note body
+        <textarea id="xhsBody" rows="8" placeholder="正文。真实、细节、像朋友推荐。结尾丢一个让人想留言的问题。"></textarea>
+      </label>
+      <label>Tags <span id="xhsTagCount" class="counter">0 (aim 3-5)</span>
+        <input type="text" id="xhsTags" placeholder="打工人, 第一份工资, EPF (comma separated)">
+      </label>
+      <div id="xhsLint" class="lint"></div>
+      <div class="checklist" id="xhsChecklist"></div>
+      <button id="xhsCopy" class="btn primary wide">Copy full note</button>
+      <p class="hint">Then: open XHS app → new note → paste. Images from gallery.</p>
+    </div>
+
+    <!-- IG PANE -->
+    <div id="pane-ig" class="pane hidden">
+      <label>Caption
+        <textarea id="igCaption" rows="8" placeholder="Hook first line. Story. CTA: link in bio lah."></textarea>
+      </label>
+      <label>Hashtags
+        <input type="text" id="igHashtags" placeholder="gajidecoder, adultingmalaysia (comma separated)">
+      </label>
+      <div class="checklist" id="igChecklist"></div>
+      <button id="igCopy" class="btn primary wide">Copy caption + tags</button>
+      <p class="hint">Then: IG → new post → slides from gallery → paste caption.</p>
     </div>
   </div>
 

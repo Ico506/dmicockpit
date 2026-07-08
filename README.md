@@ -1,6 +1,6 @@
-# DMICOckpit — P1
+# DMICOckpit
 
-Personal content pipeline PWA for the three DMICO personas (XHS + Instagram). P1 = persona layer + pipeline board + PWA shell. Splitter is P2, Carousel Forge is P3. PRD: `../dmico-content-cockpit/PRD-dmicockpit.md`.
+Personal content pipeline PWA for the three DMICO personas (XHS + Instagram). P1 = persona layer + pipeline board + PWA shell. P2 = Platform Splitter: per-card XHS note + IG caption editors, XHS link/contact lint, preflight checklists that gate the posted toggles, copy buttons. P3 = Carousel Forge (pending). Themed with the real dmico-hub palette. PRD lives in the PRD_Claude folder: `dmico-content-cockpit/PRD-dmicockpit.md`.
 
 ## Deploy (GitHub Pages)
 
@@ -12,9 +12,9 @@ Personal content pipeline PWA for the three DMICO personas (XHS + Instagram). P1
 
 Chrome → open the URL → ⋮ menu → **Add to Home screen** (or the install banner). Desktop Chrome/Edge: install icon in the address bar. iOS (untested, best-effort): Share → Add to Home Screen.
 
-## Palette swap (pending)
+## Palette
 
-Colors are PLACEHOLDER tokens in the `:root` block at the top of `style.css`. When the dmico-hub `:root` variables are pasted into `MUSTREAD-NEWCHAT/dmico-brand-design-context.md`, replace the values in that one block (and optionally regenerate icons to match). Nothing else needs touching.
+Real dmico-hub tokens (cornsilk paper / ink / olive / lantern), recorded in `MUSTREAD-NEWCHAT/dmico-brand-design-context.md`. Change colors in the `:root` block of `style.css` only.
 
 ## Data + backup
 

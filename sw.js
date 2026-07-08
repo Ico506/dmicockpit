@@ -4,7 +4,7 @@
    network-first to never serve a stale app shell. */
 'use strict';
 
-var CACHE = 'dmicockpit-v1';
+var CACHE = 'dmicockpit-v3';
 var ASSETS = [
   './',
   './index.html',

@@ -22,14 +22,16 @@ var STAGES = [
 var state = null;
 var editingCardId = null;
 var editingPersonaId = null;
+var splitCardId = null;
+var activePane = 'xhs';
 
 function defaultState() {
   return {
     v: 1,
     personas: [
-      { id: uid(), name: 'Vibe Coding / AI', handle: '', banner: 'DMICO', tier: 'A', xhs: true,  ig: true,  accent: '#e8a13c' },
-      { id: uid(), name: 'Game Dev',         handle: '', banner: 'DMICO', tier: 'B', xhs: false, ig: true,  accent: '#4caf7d' },
-      { id: uid(), name: 'Life / Creatives', handle: '', banner: 'DMICO', tier: 'C', xhs: true,  ig: true,  accent: '#7d8fe0' }
+      { id: uid(), name: 'Vibe Coding / AI', handle: '', banner: 'DMICO', tier: 'A', xhs: true,  ig: true,  accent: '#C4661F' },
+      { id: uid(), name: 'Game Dev',         handle: '', banner: 'DMICO', tier: 'B', xhs: false, ig: true,  accent: '#5F6F52' },
+      { id: uid(), name: 'Life / Creatives', handle: '', banner: 'DMICO', tier: 'C', xhs: true,  ig: true,  accent: '#B08A2A' }
     ],
     cards: [],
     settings: { lastBackup: null, activePersona: 'all' }
@@ -43,6 +45,7 @@ function load() {
     var parsed = JSON.parse(raw);
     if (!parsed || parsed.v !== 1 || !Array.isArray(parsed.personas)) throw new Error('bad shape');
     state = parsed;
+    migrateAccents();
   } catch (e) {
     console.warn('State load failed, starting fresh', e);
     state = defaultState();
@@ -52,6 +55,17 @@ function load() {
 
 function save() {
   localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+
+/* one-time: map the pre-hub placeholder accents to real hub tones */
+function migrateAccents() {
+  var map = { '#e8a13c': '#C4661F', '#4caf7d': '#5F6F52', '#7d8fe0': '#B08A2A' };
+  var changed = false;
+  state.personas.forEach(function (p) {
+    var lower = (p.accent || '').toLowerCase();
+    if (map[lower]) { p.accent = map[lower]; changed = true; }
+  });
+  if (changed) save();
 }
 
 function uid() {
@@ -275,6 +289,12 @@ function renderCard(c) {
     actions.appendChild(advance);
   }
 
+  if (stage !== 'idea') {
+    var splitBtn = el('button', 'btn small', '✂ Split');
+    splitBtn.addEventListener('click', function () { openSplitter(c.id); });
+    actions.appendChild(splitBtn);
+  }
+
   if (stage === 'assets' || stage === 'posted') {
     if (p && p.ig) actions.appendChild(postedToggle(c, 'postedIG', 'IG'));
     if (p && p.xhs) actions.appendChild(postedToggle(c, 'postedXHS', 'XHS'));
@@ -288,6 +308,10 @@ function postedToggle(c, field, label) {
   var on = !!c[field];
   var b = el('button', 'btn small' + (on ? ' toggled' : ''), on ? label + ' posted ✓' : 'Posted on ' + label + '?');
   b.addEventListener('click', function () {
+    if (!on) {
+      var gate = postGate(c, field);
+      if (gate) { alert(gate); return; }
+    }
     c[field] = on ? null : Date.now();
     c.updated = Date.now();
     save();
@@ -428,6 +452,254 @@ function deletePersonaModal() {
   renderAll();
 }
 
+/* ---------------- splitter (P2) ---------------- */
+
+function ensureSplit(c) {
+  if (!c.split) {
+    c.split = {
+      xhs: { title: '', body: '', tags: '', checks: { kw: false, bait: false } },
+      ig: { caption: '', hashtags: '', checks: { hook: false, cta: false, biolink: false } }
+    };
+  }
+  return c.split;
+}
+
+function getCard(id) {
+  return state.cards.filter(function (x) { return x.id === id; })[0] || null;
+}
+
+/* XHS kills posts that try to lead users off-platform. Flag it all. */
+var XHS_LINT = [
+  { re: /(https?:\/\/|www\.|bit\.ly|\.com\b|\.my\b|\.net\b|\.io\b|\.co\b)/i, msg: 'Looks like a URL. XHS throttles/removes notes with links. Name the tool instead ("search DMICO Gaji Decoder").' },
+  { re: /(link in bio|bio\s*link|link di bio|profile link|主页链接|简介链接|主页有链接)/i, msg: '"Link in bio" phrasing gets flagged as redirection on XHS.' },
+  { re: /(wechat|weixin|微信|\bwx[:：])/i, msg: 'WeChat mention = contact-info violation on XHS.' },
+  { re: /(qr\s*code|二维码|扫码)/i, msg: 'QR code mention gets flagged on XHS.' },
+  { re: /(instagram|\binsta\b|\big[:：])/i, msg: 'Pointing to Instagram = off-platform redirection. Keep XHS self-contained.' },
+  { re: /(whatsapp|wasap)/i, msg: 'WhatsApp mention = contact-info violation on XHS.' },
+  { re: /(\+?60\s?1\d[- ]?\d{7,8}|01\d[- ]?\d{7,8})/, msg: 'Looks like a phone number. Contact info is penalized on XHS.' }
+];
+
+function lintXhs(text) {
+  var flags = [];
+  XHS_LINT.forEach(function (rule) {
+    if (rule.re.test(text)) flags.push(rule.msg);
+  });
+  return flags;
+}
+
+function charLen(str) { return Array.from(str.trim()).length; }
+
+function parseTags(str) {
+  return str.split(/[,，、#]+/).map(function (t) { return t.trim(); }).filter(Boolean);
+}
+
+function hasSplitContent(c, pane) {
+  if (!c.split) return false;
+  if (pane === 'xhs') {
+    var x = c.split.xhs;
+    return !!(x.title.trim() || x.body.trim() || x.tags.trim());
+  }
+  var g = c.split.ig;
+  return !!(g.caption.trim() || g.hashtags.trim());
+}
+
+function xhsAutoChecks(c) {
+  var x = ensureSplit(c).xhs;
+  var titleLen = charLen(x.title);
+  var tagCount = parseTags(x.tags).length;
+  var flags = lintXhs(x.title + '\n' + x.body + '\n' + x.tags);
+  return [
+    { label: 'Title 1 to 20 chars (' + titleLen + ')', pass: titleLen >= 1 && titleLen <= 20 },
+    { label: '3 to 5 tags (' + tagCount + ')', pass: tagCount >= 3 && tagCount <= 5 },
+    { label: 'No links / contacts / redirects', pass: flags.length === 0 }
+  ];
+}
+
+function igAutoChecks(c) {
+  var g = ensureSplit(c).ig;
+  return [
+    { label: 'Caption not empty', pass: g.caption.trim().length > 0 }
+  ];
+}
+
+var XHS_MANUAL = [
+  { key: 'kw', label: 'Title reads like a search result (keywords, not clever)' },
+  { key: 'bait', label: 'Ends with a question that begs a comment' }
+];
+var IG_MANUAL = [
+  { key: 'hook', label: 'Slide 1 hook earns the swipe' },
+  { key: 'cta', label: 'Last slide has the CTA' },
+  { key: 'biolink', label: 'Bio link is current' }
+];
+
+function paneReady(c, pane) {
+  var autos = pane === 'xhs' ? xhsAutoChecks(c) : igAutoChecks(c);
+  var manuals = pane === 'xhs' ? XHS_MANUAL : IG_MANUAL;
+  var checks = ensureSplit(c)[pane].checks;
+  var autosPass = autos.every(function (a) { return a.pass; });
+  var manualsPass = manuals.every(function (m) { return !!checks[m.key]; });
+  return autosPass && manualsPass;
+}
+
+/* Gate posted toggles: only when the splitter has content for that
+   platform (quick-logging posts made outside the cockpit stays free). */
+function postGate(c, field) {
+  var pane = field === 'postedXHS' ? 'xhs' : 'ig';
+  if (!hasSplitContent(c, pane)) return null;
+  if (paneReady(c, pane)) return null;
+  var missing = [];
+  var autos = pane === 'xhs' ? xhsAutoChecks(c) : igAutoChecks(c);
+  autos.forEach(function (a) { if (!a.pass) missing.push(a.label); });
+  var manuals = pane === 'xhs' ? XHS_MANUAL : IG_MANUAL;
+  var checks = ensureSplit(c)[pane].checks;
+  manuals.forEach(function (m) { if (!checks[m.key]) missing.push(m.label); });
+  return 'Preflight incomplete for ' + (pane === 'xhs' ? 'XHS' : 'IG') + ':\n\n- ' + missing.join('\n- ');
+}
+
+function openSplitter(cardId) {
+  var c = getCard(cardId);
+  if (!c) return;
+  splitCardId = cardId;
+  ensureSplit(c);
+  var p = getPersona(c.personaId);
+
+  $('splitCardTitle').textContent = c.title;
+
+  /* hide panes for platforms the persona doesn't run */
+  var xhsTab = document.querySelector('.split-tab[data-pane="xhs"]');
+  var igTab = document.querySelector('.split-tab[data-pane="ig"]');
+  var xhsOn = !p || p.xhs, igOn = !p || p.ig;
+  xhsTab.classList.toggle('hidden', !xhsOn);
+  igTab.classList.toggle('hidden', !igOn);
+  activePane = xhsOn ? 'xhs' : 'ig';
+  switchPane(activePane);
+
+  $('xhsTitle').value = c.split.xhs.title;
+  $('xhsBody').value = c.split.xhs.body;
+  $('xhsTags').value = c.split.xhs.tags;
+  $('igCaption').value = c.split.ig.caption;
+  $('igHashtags').value = c.split.ig.hashtags;
+
+  refreshSplitMeta();
+  $('splitBack').classList.remove('hidden');
+}
+
+function closeSplitter() {
+  save();
+  splitCardId = null;
+  $('splitBack').classList.add('hidden');
+  renderBoardView();
+}
+
+function switchPane(pane) {
+  activePane = pane;
+  $('pane-xhs').classList.toggle('hidden', pane !== 'xhs');
+  $('pane-ig').classList.toggle('hidden', pane !== 'ig');
+  var tabs = document.querySelectorAll('.split-tab');
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle('active', tabs[i].dataset.pane === pane);
+  }
+}
+
+function readSplitInputs() {
+  var c = getCard(splitCardId);
+  if (!c) return null;
+  var s = ensureSplit(c);
+  s.xhs.title = $('xhsTitle').value;
+  s.xhs.body = $('xhsBody').value;
+  s.xhs.tags = $('xhsTags').value;
+  s.ig.caption = $('igCaption').value;
+  s.ig.hashtags = $('igHashtags').value;
+  c.updated = Date.now();
+  return c;
+}
+
+function refreshSplitMeta() {
+  var c = getCard(splitCardId);
+  if (!c) return;
+
+  var titleLen = charLen(c.split.xhs.title);
+  var tCount = $('xhsTitleCount');
+  tCount.textContent = titleLen + '/20';
+  tCount.classList.toggle('over', titleLen > 20);
+
+  var tagCount = parseTags(c.split.xhs.tags).length;
+  $('xhsTagCount').textContent = tagCount + ' (aim 3-5)';
+
+  var lintBox = $('xhsLint');
+  lintBox.textContent = '';
+  lintXhs(c.split.xhs.title + '\n' + c.split.xhs.body + '\n' + c.split.xhs.tags).forEach(function (msg) {
+    var f = el('div', 'lint-flag');
+    f.appendChild(el('span', null, '⚠'));
+    f.appendChild(el('span', null, msg));
+    lintBox.appendChild(f);
+  });
+
+  renderChecklist(c, 'xhs', $('xhsChecklist'), xhsAutoChecks(c), XHS_MANUAL);
+  renderChecklist(c, 'ig', $('igChecklist'), igAutoChecks(c), IG_MANUAL);
+}
+
+function renderChecklist(c, pane, box, autos, manuals) {
+  box.textContent = '';
+  autos.forEach(function (a) {
+    var item = el('div', 'check-item auto ' + (a.pass ? 'pass' : 'fail'));
+    item.appendChild(el('span', 'mark', a.pass ? '✓' : '✗'));
+    item.appendChild(el('span', null, a.label));
+    box.appendChild(item);
+  });
+  manuals.forEach(function (m) {
+    var checks = c.split[pane].checks;
+    var item = el('div', 'check-item' + (checks[m.key] ? ' pass' : ''));
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !!checks[m.key];
+    cb.addEventListener('change', function () {
+      checks[m.key] = cb.checked;
+      c.updated = Date.now();
+      save();
+      refreshSplitMeta();
+    });
+    item.appendChild(cb);
+    item.appendChild(el('span', null, m.label));
+    box.appendChild(item);
+  });
+}
+
+function copyText(text, btn) {
+  function done() {
+    var old = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    setTimeout(function () { btn.textContent = old; }, 1500);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+  } else {
+    fallbackCopy(text);
+    done();
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) { /* best effort */ }
+  ta.remove();
+}
+
+function composeXhs(c) {
+  var x = c.split.xhs;
+  var tags = parseTags(x.tags).map(function (t) { return '#' + t; }).join(' ');
+  return [x.title.trim(), x.body.trim(), tags].filter(Boolean).join('\n\n');
+}
+
+function composeIg(c) {
+  var g = c.split.ig;
+  var tags = parseTags(g.hashtags).map(function (t) { return '#' + t; }).join(' ');
+  return [g.caption.trim(), tags].filter(Boolean).join('\n\n');
+}
+
 /* ---------------- settings ---------------- */
 
 function renderSettings() {
@@ -555,6 +827,26 @@ function init() {
   $('importFile').addEventListener('change', function (e) {
     if (e.target.files && e.target.files[0]) importBackup(e.target.files[0]);
     e.target.value = '';
+  });
+
+  /* splitter */
+  $('splitClose').addEventListener('click', closeSplitter);
+  $('splitTabs').addEventListener('click', function (e) {
+    var t = e.target.closest('.split-tab');
+    if (t) switchPane(t.dataset.pane);
+  });
+  ['xhsTitle', 'xhsBody', 'xhsTags', 'igCaption', 'igHashtags'].forEach(function (id) {
+    $(id).addEventListener('input', function () {
+      if (readSplitInputs()) { save(); refreshSplitMeta(); }
+    });
+  });
+  $('xhsCopy').addEventListener('click', function () {
+    var c = getCard(splitCardId);
+    if (c) copyText(composeXhs(c), $('xhsCopy'));
+  });
+  $('igCopy').addEventListener('click', function () {
+    var c = getCard(splitCardId);
+    if (c) copyText(composeIg(c), $('igCopy'));
   });
 
   renderAll();
