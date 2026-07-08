@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>DMICOckpit</title>
+  <meta name="description" content="DMICO's personal content pipeline cockpit for XHS + Instagram.">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#131318">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">DMICO<span class="brand-accent">ckpit</span></div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-view="board">Board</button>
+      <button class="tab" data-view="settings">Settings</button>
+    </nav>
+  </header>
+
+  <div id="backupNag" class="nag hidden">
+    <span id="backupNagText">Backup overdue.</span>
+    <button id="nagBackupBtn" class="btn small">Backup now</button>
+  </div>
+
+  <main>
+    <!-- BOARD VIEW -->
+    <section id="view-board">
+      <div class="persona-bar" id="personaBar"></div>
+      <div id="dashStrip" class="dash-strip"></div>
+      <div class="board-actions">
+        <button id="addCardBtn" class="btn primary wide">+ New idea</button>
+      </div>
+      <div id="board"></div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section id="view-settings" class="hidden">
+      <h2>Personas</h2>
+      <div id="personaList"></div>
+      <button id="addPersonaBtn" class="btn">+ Add persona</button>
+
+      <h2>Backup</h2>
+      <p class="hint" id="lastBackupInfo"></p>
+      <div class="row gap">
+        <button id="exportBtn" class="btn primary">Export JSON</button>
+        <label class="btn">
+          Import JSON<input type="file" id="importFile" accept="application/json" hidden>
+        </label>
+      </div>
+      <p class="hint">Data lives in this browser's localStorage only. One wiped browser = dead pipeline. Export regularly.</p>
+
+      <h2>About</h2>
+      <p class="hint">DMICOckpit P1 — persona layer + pipeline board. Splitter (P2) and Carousel Forge (P3) coming per PRD. Palette uses placeholder tokens until the dmico-hub :root variables are pasted into style.css.</p>
+    </section>
+  </main>
+
+  <!-- CARD EDITOR MODAL -->
+  <div id="modalBack" class="modal-back hidden">
+    <div class="modal">
+      <h3 id="modalTitle">New idea</h3>
+      <label>Title
+        <input type="text" id="cardTitle" maxlength="120" placeholder="e.g. First payslip: where did RM500 go?">
+      </label>
+      <label>Persona
+        <select id="cardPersona"></select>
+      </label>
+      <label>Type
+        <select id="cardType">
+          <option value="value">Value (teach / entertain / story)</option>
+          <option value="promo">Promo (tool / launch / CTA)</option>
+        </select>
+      </label>
+      <label>Notes / draft
+        <textarea id="cardNotes" rows="5" placeholder="Rough draft, angle, hook ideas..."></textarea>
+      </label>
+      <div class="row gap right">
+        <button id="modalDelete" class="btn danger hidden">Delete</button>
+        <button id="modalCancel" class="btn">Cancel</button>
+        <button id="modalSave" class="btn primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERSONA EDITOR MODAL -->
+  <div id="pModalBack" class="modal-back hidden">
+    <div class="modal">
+      <h3 id="pModalTitle">Persona</h3>
+      <label>Name<input type="text" id="pName" maxlength="40"></label>
+      <label>Handle(s)<input type="text" id="pHandle" maxlength="80" placeholder="@dmico.ai / 小红书号"></label>
+      <label>Banner<input type="text" id="pBanner" maxlength="40" placeholder="DMICO"></label>
+      <label>Tier
+        <select id="pTier">
+          <option value="A">A — primary (streak + 80/20 enforced)</option>
+          <option value="B">B — steady (weekly nudge)</option>
+          <option value="C">C — pressure-free (no metrics)</option>
+        </select>
+      </label>
+      <div class="row gap">
+        <label class="check"><input type="checkbox" id="pXhs"> XHS</label>
+        <label class="check"><input type="checkbox" id="pIg"> Instagram</label>
+      </div>
+      <label>Accent color<input type="color" id="pAccent" value="#e8a13c"></label>
+      <div class="row gap right">
+        <button id="pModalDelete" class="btn danger hidden">Delete</button>
+        <button id="pModalCancel" class="btn">Cancel</button>
+        <button id="pModalSave" class="btn primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').catch(function (e) {
+          console.warn('SW registration failed', e);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

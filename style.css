@@ -1,0 +1,172 @@
+/* ============================================================
+   DMICOckpit — styles
+   ------------------------------------------------------------
+   PALETTE = PLACEHOLDER TOKENS.
+   When Damico pastes the dmico-hub :root variables into
+   MUSTREAD-NEWCHAT/dmico-brand-design-context.md, replace ONLY
+   the values inside this :root block. Nothing else changes.
+   ============================================================ */
+:root {
+  --bg: #131318;          /* placeholder: hub page background */
+  --surface: #1d1e26;     /* placeholder: hub card/panel */
+  --surface-2: #262833;   /* placeholder: hub raised panel */
+  --text: #e8e6e1;        /* placeholder: hub main text */
+  --muted: #8b8a94;       /* placeholder: hub secondary text */
+  --accent: #e8a13c;      /* placeholder: hub primary accent */
+  --danger: #e05252;
+  --ok: #4caf7d;
+  --warn: #e8a13c;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans SC", sans-serif;
+  min-height: 100%;
+}
+
+body { padding-bottom: 48px; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--surface-2);
+}
+.brand { font-weight: 800; font-size: 1.15rem; letter-spacing: 0.5px; }
+.brand-accent { color: var(--accent); }
+.tabs { display: flex; gap: 6px; }
+.tab {
+  background: none; border: 1px solid var(--surface-2); color: var(--muted);
+  padding: 6px 14px; border-radius: 999px; font-size: 0.85rem; cursor: pointer;
+}
+.tab.active { color: var(--bg); background: var(--accent); border-color: var(--accent); font-weight: 700; }
+
+/* ---------- backup nag ---------- */
+.nag {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin: 10px 16px 0; padding: 10px 12px;
+  background: color-mix(in srgb, var(--warn) 18%, var(--surface));
+  border: 1px solid var(--warn); border-radius: var(--radius);
+  font-size: 0.85rem;
+}
+
+main { padding: 12px 16px; max-width: 720px; margin: 0 auto; }
+
+/* ---------- persona bar ---------- */
+.persona-bar {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.persona-chip {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--surface-2);
+  color: var(--muted); border-radius: 999px; padding: 7px 14px;
+  font-size: 0.85rem; cursor: pointer; white-space: nowrap;
+}
+.persona-chip.active { color: var(--text); border-color: var(--chip, var(--accent)); font-weight: 700; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--chip, var(--accent)); }
+
+/* ---------- dashboard strip ---------- */
+.dash-strip { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.dash-card {
+  flex: 1 1 30%; min-width: 100px;
+  background: var(--surface); border-radius: var(--radius);
+  padding: 10px 12px; border: 1px solid var(--surface-2);
+}
+.dash-card .big { font-size: 1.3rem; font-weight: 800; }
+.dash-card .lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.dash-card.good .big { color: var(--ok); }
+.dash-card.bad .big { color: var(--danger); }
+.dash-card.warn .big { color: var(--warn); }
+.dash-note { flex-basis: 100%; font-size: 0.8rem; color: var(--muted); }
+
+/* ---------- board ---------- */
+.board-actions { margin: 6px 0 14px; }
+.stage-group { margin-bottom: 18px; }
+.stage-head {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.stage-count {
+  background: var(--surface-2); border-radius: 999px; padding: 1px 8px; font-size: 0.75rem;
+}
+.card {
+  background: var(--surface); border: 1px solid var(--surface-2);
+  border-left: 4px solid var(--chip, var(--accent));
+  border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px;
+}
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.card-title { font-weight: 600; font-size: 0.95rem; cursor: pointer; }
+.badge {
+  font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em; flex: 0 0 auto;
+}
+.badge.value { background: color-mix(in srgb, var(--ok) 22%, var(--surface)); color: var(--ok); }
+.badge.promo { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); color: var(--accent); }
+.card-meta { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+.card-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+
+/* ---------- buttons / forms ---------- */
+.btn {
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--surface-2);
+  border-radius: 10px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
+.btn.danger { background: none; border-color: var(--danger); color: var(--danger); }
+.btn.small { padding: 4px 10px; font-size: 0.78rem; }
+.btn.wide { width: 100%; justify-content: center; padding: 12px; font-size: 0.95rem; }
+.btn.toggled { background: var(--ok); border-color: var(--ok); color: var(--bg); font-weight: 700; }
+
+h2 { font-size: 1rem; margin: 22px 0 10px; color: var(--text); }
+.hint { font-size: 0.8rem; color: var(--muted); margin: 6px 0; line-height: 1.5; }
+.row { display: flex; align-items: center; }
+.row.gap { gap: 8px; }
+.row.right { justify-content: flex-end; margin-top: 14px; }
+.hidden { display: none !important; }
+
+/* ---------- persona list (settings) ---------- */
+.p-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--surface-2);
+  border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+}
+.p-item .p-name { font-weight: 700; }
+.p-item .p-sub { font-size: 0.75rem; color: var(--muted); }
+.tier-tag {
+  margin-left: auto; font-size: 0.7rem; font-weight: 800;
+  border-radius: 6px; padding: 2px 8px; background: var(--surface-2); color: var(--muted);
+}
+
+/* ---------- modal ---------- */
+.modal-back {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.modal {
+  background: var(--surface); border-top: 1px solid var(--surface-2);
+  border-radius: 16px 16px 0 0; padding: 18px 16px 28px;
+  width: 100%; max-width: 720px; max-height: 88vh; overflow-y: auto;
+}
+.modal h3 { margin-bottom: 12px; }
+.modal label { display: block; font-size: 0.8rem; color: var(--muted); margin: 10px 0 4px; }
+.modal input[type="text"], .modal select, .modal textarea {
+  width: 100%; margin-top: 4px;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--surface-2); border-radius: 10px;
+  padding: 10px; font-size: 0.95rem; font-family: inherit;
+}
+.modal input[type="color"] { margin-top: 4px; width: 60px; height: 36px; border: none; background: none; }
+.modal .check { display: inline-flex; align-items: center; gap: 6px; color: var(--text); font-size: 0.9rem; margin-top: 8px; }
+
+@media (min-width: 600px) {
+  .modal-back { align-items: center; }
+  .modal { border-radius: 16px; }
+}
