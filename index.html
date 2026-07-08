@@ -132,6 +132,36 @@
     </div>
   </div>
 
+  <!-- FORGE (fullscreen) -->
+  <div id="forgeBack" class="split-back hidden">
+    <div class="split-head">
+      <button id="forgeClose" class="btn small">← Board</button>
+      <div id="forgeCardTitle" class="split-title"></div>
+    </div>
+
+    <div class="pane">
+      <canvas id="forgeCanvas" width="1080" height="1350" class="forge-preview"></canvas>
+
+      <div id="forgeSlides" class="forge-slides"></div>
+      <p id="forgeCountHint" class="hint"></p>
+
+      <div id="forgeAddBar" class="forge-add">
+        <button class="btn small" data-addtype="hook">+ Hook</button>
+        <button class="btn small" data-addtype="content">+ Content</button>
+        <button class="btn small" data-addtype="stat">+ Stat</button>
+        <button class="btn small" data-addtype="cta">+ CTA</button>
+      </div>
+
+      <div id="forgeFields" class="forge-fields"></div>
+
+      <div class="row gap">
+        <button id="forgeExportIg" class="btn primary wide">Export IG (1080×1350)</button>
+        <button id="forgeExportXhs" class="btn primary wide">Export XHS (3:4)</button>
+      </div>
+      <p class="hint">Export opens the share sheet (pick Files / Photos to save all slides), or falls back to downloads. Preview shows the IG size; XHS re-renders at 3:4, same content.</p>
+    </div>
+  </div>
+
   <!-- PERSONA EDITOR MODAL -->
   <div id="pModalBack" class="modal-back hidden">
     <div class="modal">
@@ -160,6 +190,7 @@
   </div>
 
   <script src="./app.js"></script>
+  <script src="./forge.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

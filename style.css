@@ -250,3 +250,34 @@ h2 { font-family: var(--display); font-size: 1rem; margin: 22px 0 10px; color: v
 .check-item.fail .mark { color: var(--clay); }
 .check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
 .pane .btn.wide { margin-top: 4px; }
+
+/* ---------- forge ---------- */
+.forge-preview {
+  width: 100%; height: auto; display: block;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); margin-bottom: 12px;
+  background: var(--paper);
+}
+.forge-slides { margin-bottom: 6px; }
+.forge-slide-row { display: flex; gap: 4px; margin-bottom: 5px; align-items: stretch; }
+.forge-slide-btn {
+  flex: 1; text-align: left; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+  font-size: 0.82rem; cursor: pointer; font-family: var(--body);
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.forge-slide-row.active .forge-slide-btn { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-wash); font-weight: 700; }
+.forge-slide-row .btn.small { padding: 4px 8px; }
+.forge-slide-row .btn.small:disabled { opacity: 0.35; cursor: default; }
+.forge-add { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 4px; }
+.forge-fields { margin: 10px 0 14px; }
+.forge-fields label { display: block; font-size: 0.8rem; color: var(--ink-soft); margin: 10px 0 4px; }
+.forge-fields input, .forge-fields textarea {
+  width: 100%; margin-top: 4px;
+  background: var(--surface-2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px; font-size: 0.95rem; font-family: var(--body);
+}
+.forge-fields input:focus, .forge-fields textarea:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash);
+}

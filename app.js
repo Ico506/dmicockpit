@@ -293,6 +293,10 @@ function renderCard(c) {
     var splitBtn = el('button', 'btn small', '✂ Split');
     splitBtn.addEventListener('click', function () { openSplitter(c.id); });
     actions.appendChild(splitBtn);
+
+    var forgeBtn = el('button', 'btn small', '🎨 Forge');
+    forgeBtn.addEventListener('click', function () { openForge(c.id); });
+    actions.appendChild(forgeBtn);
   }
 
   if (stage === 'assets' || stage === 'posted') {
